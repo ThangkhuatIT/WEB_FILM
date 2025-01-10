@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  nestjs-app:
+    build:
+      context: .               # Đường dẫn tới Dockerfile
+      dockerfile: Dockerfile   # Tên file Dockerfile
+    ports:
+      - "3000:3000"            # Map cổng 3000 của container ra ngoài
+    depends_on:
+      - mysql
+      - redis
+    environment:
+      # Các biến môi trường cho ứng dụng NestJS
+      DATABASE_HOST: mysql
+      DATABASE_PORT: 3306
+      DATABASE_USERNAME: root
+      DATABASE_PASSWORD: root_password
+      DATABASE_NAME: webfilm_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      TOKEN_SECRET: thansdgasfsdfsdffsdafsadfsdfaasdfsa
+      MAIL_USER: khuatvanthang01012001@gmail.com
+      MAIL_PASSWORD: mwqxfoqhpaudxdgo
+      MAIL_HOST: smtp.gmail.com
+      MAIL_PORT: 465
+    networks:
+      - webfil_net
+    volumes:
+      - .:/app                 # Đồng bộ mã nguồn vào container
+      - /app/node_modules      # Lưu trữ thư mục node_modules
+
+  mysql:
+    image: mysql:8.4.0           # Image MySQL
+    container_name: mysql
+    command: ["mysqld", "--mysql-native-password=ON"]
+    restart: always
+    ports:
+      - "13306:3306"            # Map cổng 3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: webfilm_db
+    networks:
+      - webfil_net
+    volumes:
+      - mysql_data:/var/lib/mysql # Lưu trữ dữ liệu MySQL
+
+  redis:
+    image: redis:latest        # Image Redis
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379" 
+    networks:
+      - webfil_net           # Map cổng 6379
+
+networks:
+  webfil_net:
+    driver: bridge
+
+volumes:
+  mysql_data:                  # Volume lưu trữ dữ liệu MySQL
