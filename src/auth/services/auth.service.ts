@@ -1,11 +1,12 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { TokenService } from './token.service';
 import { UserService } from 'src/resources/users/user.service';
 import { RegisterDto } from '../dtos/register.dto';
 import { SignInResponseDto } from '../dtos/signin-response.dto';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
 import { VERIFY_SUBJECT } from '../constants';
+import { TokenService } from 'src/resources/tokens/token.service';
+import { TokenType } from 'src/resources/tokens/types/token';
 @Injectable()
 export class AuthService {
   constructor(
@@ -25,7 +26,7 @@ export class AuthService {
       email,
       password: hashedPassword,
     });
-    cons
+    const verificationCode = await this.tokenService.getToken(TokenType.VERIFY);
     const verificationLink = `https://your-website.com/verify?code=${verificationCode}`;
     this.mailService.sendEmail({
       to: newUser.email,
@@ -34,11 +35,12 @@ export class AuthService {
       context: {
         subject: VERIFY_SUBJECT,
         name: newUser.name,
+        verificationLink,
       },
     });
     const [refreshToken, accessToken] = await Promise.all([
-      this.tokenService.signToken(newUser, 'TokenType'),
-      this.tokenService.signToken(newUser, 'accessToken'),
+      this.tokenService.getJwt(newUser, TokenType.REFRESH),
+      this.tokenService.getJwt(newUser, TokenType.ACCESS),
     ]);
     return {
       accessToken,

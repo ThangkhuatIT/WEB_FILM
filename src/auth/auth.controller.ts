@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Post, UseInterceptors } from '@nestjs/common';
-import { TokenService } from './services/token.service';
 import { AuthService } from './services/auth.service';
 import { RegisterDto } from './dtos/register.dto';
 import { SignInResponseDto } from './dtos/signin-response.dto';

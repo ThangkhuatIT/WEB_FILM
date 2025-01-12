@@ -6,6 +6,7 @@ import {
   Generated,
   PrimaryColumn,
 } from 'typeorm';
+import { TokenType } from './types/token';
 
 @Entity('tokens')
 export class Token extends BaseEntity {
@@ -14,8 +15,8 @@ export class Token extends BaseEntity {
   id: string;
   @Column({ length: 50 })
   token: string;
-  @Column({ type: 'enum', enum: Token, default: Token.USER })
-  typeToken: Token;
+  @Column({ type: 'enum', enum: TokenType, default: TokenType.ACCESS })
+  type: Token;
   @CreateDateColumn({
     nullable: true,
   })
