@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { BaseService } from '../base/base.service';
 import { Token } from './token.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -41,6 +41,16 @@ export class TokenService extends BaseService<Token> {
         expiresIn,
       },
     );
+  }
+  async verifyJwt(token: string):Promise<any> {
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.TOKEN_SECRET,
+      });
+      return payload;
+    } catch (error) {
+      throw new UnauthorizedException('token không hợp lệ ! ');
+    }
   }
   randomString(length: number) {
     const chars =

@@ -13,7 +13,7 @@ export class BaseService<T extends BaseEntity>
   }
 
   findById(id: string): Promise<T> {
-    return this.repository.findOne({ id: id } as FindOneOptions);
+    return this.repository.findOne({where:{ id: id }} as FindOneOptions);
   }
 
   store(data: any): Promise<T> {

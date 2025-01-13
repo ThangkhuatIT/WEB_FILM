@@ -10,4 +10,7 @@ export class UserResponseDto {
 
   @Expose()
   email: string;
+
+  @Expose()
+  isActive: boolean;
 }

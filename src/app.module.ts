@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -6,9 +6,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
 import { UserHttpModule } from './resources/users/users-http.module';
 import { AuthModule } from './auth/auth.module';
-import { MailerModule } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { MailModule } from './mail/mail.module';
+import { JwtMiddleware } from './middlewares/jwt.middleware';
+import { TokenModule } from './resources/tokens/token.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -22,8 +21,13 @@ import { MailModule } from './mail/mail.module';
     }),
     UserHttpModule,
     AuthModule,
+    TokenModule
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  public configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(JwtMiddleware).forRoutes('*');
+  }
+}

@@ -9,7 +9,8 @@ export class UserService extends BaseService<User> {
   constructor(@InjectRepository(User) repository: Repository<User>) {
     super(repository);
   }
-  findByEmail(email: string): Promise<User | null> {
-    return this.repository.findOne({where:{ email: email }});
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await this.repository.findOne({ where: { email: email } });
+    return user ? user : null;
   }
 }
