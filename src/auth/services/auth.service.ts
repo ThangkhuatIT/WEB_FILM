@@ -1,15 +1,17 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { UserService } from 'src/resources/users/user.service';
 import { RegisterDto } from '../dtos/register.dto';
 import { SignInResponseDto } from '../dtos/signin-response.dto';
 import * as bcrypt from 'bcrypt';
 import { MailService } from 'src/mail/mail.service';
-import { VERIFY_SUBJECT } from '../constants';
+import { RESET_PASSWORD_SUBJECT, VERIFY_SUBJECT } from '../constants';
 import { TokenService } from 'src/resources/tokens/token.service';
 import { TokenType } from 'src/resources/tokens/types/token';
 import { LoginDto } from '../dtos/login.dto';
 import { UserNotFoundException } from 'src/resources/users/exceptions/userNotFound.exception';
 import { RefreshTokenDto } from '../dtos/refresh_token.dto';
+import { ResetPasswordDto } from '../dtos/change_password.dto';
+import { ForGetPasswordDto } from '../dtos/forget_password.dto';
 @Injectable()
 export class AuthService {
   constructor(
@@ -57,7 +59,6 @@ export class AuthService {
     if (!user) {
       throw new UserNotFoundException();
     } else {
-      const hashedPassword = await bcrypt.hash(password, 10);
       const isMatch = await bcrypt.compare(password, user.password);
       if (!isMatch) {
         throw new BadRequestException('Mật khẩu không chính xác');
@@ -79,7 +80,7 @@ export class AuthService {
     const { token, userId } = refreshTokenDto;
     try {
       const user = await this.userService.findById(userId);
-      if (!user) throw new BadRequestException('user không tồn tại');
+      if (!user) throw new UserNotFoundException();
       const data = await this.tokenService.verifyJwt(token);
       const currentTime = Math.floor(Date.now() / 1000);
       if (data.exp && currentTime > data.exp)
@@ -96,5 +97,47 @@ export class AuthService {
     } catch (error: any) {
       throw new BadRequestException(error.message);
     }
+  }
+  async changePassword(resetPasswordDto: ResetPasswordDto) {
+    const { userId, password, oldPassword } = resetPasswordDto;
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Mật khẩu sai');
+    }
+    const newPassword = await bcrypt.hash(password, 10);
+    user.password = newPassword;
+    await user.save();
+  }
+  async sendMail_forget_pass(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) throw new UserNotFoundException();
+    const resetPasswordCode = await this.tokenService.getToken(
+      TokenType.RESET_PASS,
+    );
+    const resetPasswordLink = `https://your-website.com/verify?code=${resetPasswordCode}`;
+    this.mailService.sendEmail({
+      to: user.email,
+      subject: RESET_PASSWORD_SUBJECT,
+      template: 'verifyEmail',
+      context: {
+        subject: RESET_PASSWORD_SUBJECT,
+        name: user.name,
+        resetPasswordLink,
+      },
+    });
+  }
+  async forGetPassword(forGetPasswordDto: ForGetPasswordDto) {
+    const { userId, password } = forGetPasswordDto;
+    const user = await this.userService.findById(userId);
+    if (!user) {
+      throw new UserNotFoundException();
+    }
+    const newPassword = await bcrypt.hash(password, 10);
+    user.password = newPassword;
+    await user.save();
   }
 }

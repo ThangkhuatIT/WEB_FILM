@@ -8,6 +8,8 @@ import { UserHttpModule } from './resources/users/users-http.module';
 import { AuthModule } from './auth/auth.module';
 import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { TokenModule } from './resources/tokens/token.module';
+import { UploadModule } from './upload/upload.module';
+import { AUTH_GUARD, AuthGuard } from './guards/auth.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,10 +23,13 @@ import { TokenModule } from './resources/tokens/token.module';
     }),
     UserHttpModule,
     AuthModule,
-    TokenModule
+    TokenModule,
+    UploadModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService
+  ],
 })
 export class AppModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {
