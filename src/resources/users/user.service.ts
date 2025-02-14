@@ -6,11 +6,13 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 @Injectable()
 export class UserService extends BaseService<User> {
-  constructor(@InjectRepository(User) repository: Repository<User>) {
-    super(repository);
+  private readonly userRepository: Repository<User>;
+  constructor(@InjectRepository(User) userRepository: Repository<User>) {
+    super(userRepository);
+    this.userRepository = userRepository;
   }
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.repository.findOne({ where: { email: email } });
+    const user = await this.userRepository.findOne({ where: { email: email } });
     return user ? user : null;
   }
 }

@@ -1,6 +1,14 @@
-import { BaseEntity, DeleteResult, FindOneOptions, Repository } from 'typeorm';
+import {
+  BaseEntity,
+  DeleteResult,
+  FindOneOptions,
+  FindOperator,
+  In,
+  Repository,
+} from 'typeorm';
 import { IBaseService } from './i.base.service';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BadRequestException } from '@nestjs/common';
 
 export class BaseService<T extends BaseEntity> implements IBaseService<T> {
   constructor(protected readonly repository: Repository<T>) {}
@@ -23,5 +31,12 @@ export class BaseService<T extends BaseEntity> implements IBaseService<T> {
 
   delete(id: string): Promise<DeleteResult> {
     return this.repository.delete(id);
+  }
+  findByIds(ids: string[]): Promise<T[] | null> {
+    return this.repository.find({
+      where: {
+        id: In(ids),
+      } as any,
+    });
   }
 }

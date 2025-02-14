@@ -10,6 +10,8 @@ import { JwtMiddleware } from './middlewares/jwt.middleware';
 import { TokenModule } from './resources/tokens/token.module';
 import { UploadModule } from './upload/upload.module';
 import { AUTH_GUARD, AuthGuard } from './guards/auth.guard';
+import { MovieModule } from './resources/movies/movie.module';
+import { GenreModule } from './resources/genres/genre.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -25,11 +27,11 @@ import { AUTH_GUARD, AuthGuard } from './guards/auth.guard';
     AuthModule,
     TokenModule,
     UploadModule,
+    MovieModule,
+    GenreModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService
-  ],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   public configure(consumer: MiddlewareConsumer): void {

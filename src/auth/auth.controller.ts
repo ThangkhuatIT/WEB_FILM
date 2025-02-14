@@ -19,6 +19,8 @@ import { RefreshTokenDto } from './dtos/refresh_token.dto';
 import { ResetPasswordDto } from './dtos/change_password.dto';
 import { ForGetPasswordDto } from './dtos/forget_password.dto';
 import { AuthGuard } from 'src/guards/auth.guard';
+import { RolesGuard } from 'src/guards/role.guard';
+import { Roles } from 'src/decorators/roles.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -26,13 +28,13 @@ export class AuthController {
 
   @Post('register')
   @UseInterceptors(new TransformDataInterceptor(SignInResponseDto))
-  async register(@Body() registerDto: RegisterDto) {
+  async register(@Body() registerDto: RegisterDto): Promise<SignInResponseDto> {
     return this.authService.register(registerDto);
   }
 
   @Post('login')
   @UseInterceptors(new TransformDataInterceptor(SignInResponseDto))
-  async login(@Body() loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto): Promise<SignInResponseDto> {
     return this.authService.login(loginDto);
   }
 
@@ -41,7 +43,8 @@ export class AuthController {
     return this.authService.refreshToken(refreshTokenDto);
   }
   @Patch('change-password')
-  @UseGuards(AuthGuard)
+  @Roles('admin')
+  @UseGuards(AuthGuard, RolesGuard)
   async changePassword(@Body() resetPasswordDto: ResetPasswordDto) {
     this.authService.changePassword(resetPasswordDto);
   }

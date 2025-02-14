@@ -9,12 +9,11 @@ export class JwtMiddleware implements NestMiddleware {
     const token = this.getTokenFromHeader(req);
     if (token) {
       const data = await this.tokenService.verifyJwt(token);
-      req['user'] = data.payload;
+      req['user'] = data;
     }
     next();
   }
   private getTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+    return request.headers.authorization?.split(' ')[1] ?? '';
   }
 }
